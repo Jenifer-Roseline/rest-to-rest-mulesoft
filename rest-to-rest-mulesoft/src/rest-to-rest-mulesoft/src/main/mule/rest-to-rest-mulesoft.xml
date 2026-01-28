@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="33cfae4d-17b3-4b83-8bd4-33026861431c" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="2c8be463-52ff-42b8-a59e-541586b55272" >
+		<http:request-connection host="jsonplaceholder.typicode.com" />
+	</http:request-config>
+	<flow name="rest-to-rest-mulesoftFlow" doc:id="7f99142d-9c2b-4f42-a655-24d111a7fe5f" >
+		<http:listener doc:name="Listener" doc:id="b01d0444-9c0e-468f-beaf-a311c564d71c" config-ref="HTTP_Listener_config" path="/createUser" allowedMethods="POST" outputMimeType="application/json"/>
+		<ee:transform doc:name="Transform Message" doc:id="31667f09-7dd5-4218-898f-f9c9a41b0e82" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  fullName: payload.name,
+  userEmail: payload.email,
+  userRole: payload.role
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="b5bfa1b9-86ec-4573-88e6-2f711870da70" path="/posts" config-ref="HTTP_Request_configuration"/>
+		<set-payload value='#[{&#10;"message": "User created successfully",&#10;"externalApiResponse": payload&#10;}]' doc:name="Set Payload" doc:id="c4cf2018-6685-43ac-8dad-f2a6e91f8c14" />
+		<logger level="INFO" doc:name="Logger" doc:id="b70ec2f8-f2dc-46a5-8484-ab03e2788cdc" message="#[payload]"/>
+	</flow>
+</mule>
